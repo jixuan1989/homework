@@ -4,3 +4,16 @@
 *.jar
 *.war
 *.ear
+
+*/bin/*
+*/build/*
+
+
+.metadata
+
+
+
+#ignore some project
+lire
+HighDimensionIndex
+RemoteSystemsTempFiles
