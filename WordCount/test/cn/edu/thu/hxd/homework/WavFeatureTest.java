@@ -11,6 +11,8 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.BytesWritable;
 
+import cn.edu.thu.hxd.homework.utils.JAudioUtils;
+
 public class WavFeatureTest {
 
 	static Configuration conf=new Configuration();

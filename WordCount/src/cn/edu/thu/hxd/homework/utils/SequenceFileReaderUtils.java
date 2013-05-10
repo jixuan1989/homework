@@ -25,6 +25,8 @@ import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.SequenceFile.CompressionType;
 import org.apache.hadoop.io.compress.GzipCodec;
 
+import cn.edu.thu.hxd.homework.audio.LinkedVector;
+
 import be.hogent.tarsos.lsh.Vector;
 
 import Jama.EigenvalueDecomposition;
@@ -33,7 +35,7 @@ import Jama.Matrix;
 public class SequenceFileReaderUtils {
 
 		@SuppressWarnings("resource")
-		public static List<Vector> readFromHDFS(String uri) throws IOException{
+		public static List<Vector> readImageFeaturesFromHDFS(String uri) throws IOException{
 			//String uri="hdfs://pc0:9000/features/frames/part-00000";  
 	        Configuration con=new Configuration();  
 	        FileSystem fs=FileSystem.get(URI.create(uri), con);  
@@ -47,14 +49,14 @@ public class SequenceFileReaderUtils {
 	            System.out.println("key:"+key);  
 	            byte[] b=value.getBytes();  
 	            System.out.println("b.length:"+b.length);  
-	            double[] features=transferBytes(b); 
+	            double[] features=transferFrameFeature2Bytes(b); 
 	            Vector vector=new Vector(key.toString(),features);
 	            valuesList.add(vector);
 	        }  
 	        fs.close();
 	        return valuesList;
 		}
-	   public List<double[]> readImage() throws IOException{  
+	   public List<double[]> readImageFeaturesFromHDFS() throws IOException{  
 //	      String uri="hdfs://192.168.50.28:8020/user/root/jyl/testByteImageSequenceFile";  
 	          
 	        String uri="hdfs://pc0:9000/features/frames/part-00000";  
@@ -74,15 +76,45 @@ public class SequenceFileReaderUtils {
 	            keyList.add(key.toString());
 	            byte[] b=value.getBytes();  
 	            System.out.println("b.length:"+b.length);  
-	            double[] features=transferBytes(b); 
+	            double[] features=transferFrameFeature2Bytes(b); 
 	            Vector vector=new Vector(key.toString(),features);
 	            valuesList.add(vector);
 	            values.add(features);
 	        }  
 	       return values;
-	        
-
-	    }  
+	    } 
+	   
+		@SuppressWarnings("resource")
+		public static List<Vector> readWavFeaturesFromHDFS(String uri) throws IOException{
+			//String uri="hdfs://pc0:9000/features/frames/part-00000";  
+	        Configuration con=new Configuration();  
+	        FileSystem fs=FileSystem.get(URI.create(uri), con);  
+	        Path path=new Path(uri);  
+	        SequenceFile.Reader reader=null;  
+	        reader=new SequenceFile.Reader(fs, path, con);  
+	        Text key=new Text();  
+	        BytesWritable value=new BytesWritable();  
+	        List<Vector> valuesList=new ArrayList<Vector>();
+	        while(reader.next(key, value)){  
+//	            System.out.println("key:"+key);  
+	            byte[] b=value.getBytes();  
+//	            System.out.println("b.length:"+b.length); 
+	            double[][][] features=transferWavFeature2Bytes(b);
+	            for(int i=0;i<features.length;i++){
+	            	LinkedVector vector=new LinkedVector(key.toString()+"|"+features[i][0][0]+"|"+features[i][0][1],features[i][1]);
+		            valuesList.add(vector);
+	            }
+	        }  
+	        fs.close();
+	        return valuesList;
+		}
+	   
+	   /**
+	    * 保存到文件
+	    * @param keys 特征值
+	    * @param values 特征向量
+	    * @throws IOException
+	    */
 	   private static void saveEigenvalue(double[] keys,double[][] values) throws IOException{
 		   File file=new File("eigenvalue.bin");
 		   DataOutputStream outputStream=new DataOutputStream(new FileOutputStream(file));
@@ -99,6 +131,12 @@ public class SequenceFileReaderUtils {
 		   }
 		   outputStream.close();
 	   }
+	   /**
+	    * 将结果写入hdfs中，有问题。
+	    * @param keys
+	    * @param values
+	    * @throws IOException
+	    */
 	   public static void writeIntoHDFS(List<String> keys,double[][] values) throws IOException{
 		   String uri="hdfs://pc0:9000/features/framesPCA";  
 	        Configuration con=new Configuration();  
@@ -120,17 +158,59 @@ public class SequenceFileReaderUtils {
 	        fs.close();
 	   }
 	    public static void main(String[] args) throws IOException {  
-	    	SequenceFileReaderUtils demo=new SequenceFileReaderUtils();  
-	    	List<double[]> values=demo.readImage();
-	    	demo.PCA(values);
+//	    	SequenceFileReaderUtils demo=new SequenceFileReaderUtils();  
+//	    	List<double[]> values=demo.readImageFeaturesFromHDFS();
+//	    	demo.PCA(values);
 	        
 //	    	double[][]data=new double[][]{{1,2,3},{1,5,6},{1, 8,9},{1,10,11}};
 //	    	Matrix matrix=new Matrix(data);
 //	    	matrix.eig().getD().print(4, 2);
 //	    	matrix.eig().getV().print(4, 2);
 //	    	matrix.times(matrix.eig().getV()).print(4, 2);
+	    	
+	    	List<Vector> vectors=readWavFeaturesFromHDFS("hdfs://pc0:9000/features/wavs_smooth2/part-00000");
+//	    	for(Vector vector:vectors){
+//	    		System.out.println(vector.getKey());
+//	    		System.out.println(vector);
+//	    		System.out.println("-------------------");
+//	    	}
 	    }
-	    private static double[] transferBytes(byte[] bytes) throws IOException{
+	    
+	    /**
+	     * 将一个bytes数组解析为音频特征数组
+	     * @param bytes
+	     * @return
+	     * @throws IOException
+	     */
+	    public static double[][][] transferWavFeature2Bytes(byte[] bytes) throws IOException{
+	    	List<double[][]> list=new ArrayList<double[][]>();
+	    	 DataInputStream inputStream=new DataInputStream(new ByteArrayInputStream(bytes));
+	    	 int total=inputStream.readInt();
+//	    	 System.out.println("total window size:"+total);
+	    	 for(int i=0;i<total;i++){
+	    		 double[][] window=new double[2][];
+	    		 window[0]=new double[2];
+	    		 window[0][0]=inputStream.readDouble();
+	    		 window[0][1]=inputStream.readDouble();
+//	    		 System.out.println(Arrays.toString(window[0]));
+	    		 int size=inputStream.readInt();
+	    		 double[] data=new double[size];
+	    		 for(int j=0;j<size;j++){
+	    			 data[j]=inputStream.readDouble();
+				 }
+	    		 window[1]=data;
+	    		 list.add(window);
+	    	 }
+	    	 inputStream.close();
+	    	 return list.toArray(new double[1][1][]);
+	    }
+	    /**
+	     * 将一个bytes数组解析为图片特征数组
+	     * @param bytes
+	     * @return
+	     * @throws IOException
+	     */
+	    private static double[] transferFrameFeature2Bytes(byte[] bytes) throws IOException{
 			int color;
 			int fcth;
 			int edge;
@@ -160,6 +240,12 @@ public class SequenceFileReaderUtils {
 	         } 
 		     return results;
 	    }
+	    
+	    /**
+	     * 对一个double矩阵进行pca降维
+	     * @param values
+	     * @throws IOException
+	     */
 	    public static void PCA(List<double[]> values) throws IOException{
 	        //PCA降维
 	        double[][] result=new double[values.size()][values.get(0).length];
@@ -206,6 +292,10 @@ public class SequenceFileReaderUtils {
 //			System.out.println("save in HDFS...");
 //			writeIntoHDFS(keyList, resultMatrix.getArray());
 	    }
+	    /**
+	     * 矩阵按列中心化
+	     * @param data
+	     */
 	    private static void decentralization(double[][] data){
 			int m=data.length;
 			int n=data[0].length;

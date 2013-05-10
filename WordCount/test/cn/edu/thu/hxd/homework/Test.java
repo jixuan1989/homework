@@ -8,8 +8,14 @@ import java.io.DataOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import javax.imageio.ImageIO;
 
@@ -26,6 +32,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.IOUtils;
 import org.apache.hadoop.mapred.JobConf;
+
 
 
 public class Test {
@@ -85,18 +92,39 @@ public class Test {
 //			IOUtils.closeStream(in);
 //		}
 //		hdfs.close();
-		byte[]test=new byte[]{20, 0, 0, 0, 0, 0, 0, 64};
-		System.out.println(ByteBuffer.wrap(test).getDouble());
-		System.out.println(new Double(5.1));
-		ByteArrayOutputStream byteArrayOutputStream=new ByteArrayOutputStream(1000);
-		DataOutputStream outputStream=new DataOutputStream(byteArrayOutputStream);
-		outputStream.writeDouble(2.0);
-		outputStream.writeDouble(5.0);
-		System.out.println(Arrays.toString(byteArrayOutputStream.toByteArray()));
-		ByteArrayInputStream byteArrayInputStream=new ByteArrayInputStream(byteArrayOutputStream.toByteArray());
-		DataInputStream inputStream=new DataInputStream(byteArrayInputStream);
-		System.err.println(inputStream.readDouble());
-		System.err.println(inputStream.readDouble());
+//		byte[]test=new byte[]{20, 0, 0, 0, 0, 0, 0, 64};
+//		System.out.println(ByteBuffer.wrap(test).getDouble());
+//		System.out.println(new Double(5.1));
+//		ByteArrayOutputStream byteArrayOutputStream=new ByteArrayOutputStream(1);
+//		DataOutputStream outputStream=new DataOutputStream(byteArrayOutputStream);
+//		outputStream.writeDouble(2.0);
+//		outputStream.writeDouble(5.0);
+//		System.out.println(Arrays.toString(byteArrayOutputStream.toByteArray()));
+//		ByteArrayInputStream byteArrayInputStream=new ByteArrayInputStream(byteArrayOutputStream.toByteArray());
+//		DataInputStream inputStream=new DataInputStream(byteArrayInputStream);
+//		System.err.println(inputStream.available());
+//		System.err.println(inputStream.readDouble());
+//		System.err.println(inputStream.readDouble());
+//		System.err.println(inputStream.available());
+		
+		Map<String,Double> scoresMap=new HashMap<String,Double>();
+		scoresMap.put("1", 0.11);
+		scoresMap.put("2", 0.01);
+		scoresMap.put("3", 1.11);
+		scoresMap.put("4", 0.81);
+//		Collections.sort
+		List<Entry<String, Double>> sort=new ArrayList<Entry<String,Double>>(scoresMap.entrySet());
+		Collections.sort(sort,new Comparator<Entry<String, Double> >() {
+			@Override
+			public int compare(Entry<String, Double> o1, Entry<String, Double> o2) {
+//				System.out.println((-)+"=="+((int) (o1.getValue()-o2.getValue())));
+				return Double.compare(o1.getValue(), o2.getValue());
+//				return (int) (o1.getValue()-o2.getValue());
+			}
+		});
+		for(int i=0;i<sort.size();i++){
+			System.out.println((sort.get(i).getKey())+":"+sort.get(i).getValue());
+		}
 	}
 
 }
