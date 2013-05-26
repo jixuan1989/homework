@@ -168,14 +168,28 @@ public class SequenceFileReaderUtils {
 //	    	matrix.eig().getV().print(4, 2);
 //	    	matrix.times(matrix.eig().getV()).print(4, 2);
 	    	
-	    	List<Vector> vectors=readWavFeaturesFromHDFS("hdfs://pc0:9000/features/wavs_smooth2/part-00000");
-//	    	for(Vector vector:vectors){
-//	    		System.out.println(vector.getKey());
-//	    		System.out.println(vector);
-//	    		System.out.println("-------------------");
-//	    	}
+//	    	List<Vector> vectors=readImageFeaturesFromHDFS("hdfs://pc0:9000/features/frames/part-00000");
+	    	//String uri="hdfs://pc0:9000/features/frames/part-00000";  
+//	        Configuration con=new Configuration();  
+//	        FileSystem fs=FileSystem.get(URI.create("hdfs://pc0:9000/"), con);  
+//	        Path path=new Path("hdfs://pc0:9000/mutli_movie_wav");  
+//	       Path dest=new Path("e:\\tmp\\hdfsWavs");
+//	        fs.copyToLocalFile(path, dest);
+	    	rmCRCFile(new File("e:\\tmp\\hdfsWavs"));
 	    }
-	    
+	    public static void rmCRCFile(File folder){
+	    	if(folder.isDirectory()){
+	    		for(File file:folder.listFiles()){
+	    			if(file.isDirectory()){
+	    				rmCRCFile(file);
+	    			}else{
+	    				if(file.getName().endsWith(".crc")){
+	    					file.delete();
+	    				}
+	    			}
+	    		}
+	    	}
+	    }
 	    /**
 	     * 将一个bytes数组解析为音频特征数组
 	     * @param bytes
@@ -210,7 +224,7 @@ public class SequenceFileReaderUtils {
 	     * @return
 	     * @throws IOException
 	     */
-	    private static double[] transferFrameFeature2Bytes(byte[] bytes) throws IOException{
+	    public static double[] transferFrameFeature2Bytes(byte[] bytes) throws IOException{
 			int color;
 			int fcth;
 			int edge;

@@ -1,0 +1,1 @@
+这个作业中，包含了如何从hdfs中读写数据，如何用mapreduce调用jAudio提取mfcc特征。以及如何用LSH对图片和音频进行索引

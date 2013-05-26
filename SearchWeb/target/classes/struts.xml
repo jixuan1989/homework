@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE struts PUBLIC
+    "-//Apache Software Foundation//DTD Struts Configuration 2.0//EN"
+    "http://struts.apache.org/dtds/struts-2.0.dtd">
+<struts>
+    <constant name="struts.action.extension" value="html" />  
+    <constant name="struts.custom.i18n.resources" value="lang"/>
+<!--         <constant name="struts.convention.action.packages" value="com.jgeppert.struts2.jquery.showcase"/> -->
+<!--     <constant name="struts.action.excludePattern" value="/tlxweb/ueditor*" /> -->
+    <!-- 打开开发模式 -->
+	<constant name="struts.devMode" value="true" />
+    <!--解决乱码    -->
+    <constant name="struts.i18n.encoding" value="UTF-8" />
+    <!-- 指定允许上传的文件最大字节数。默认值是2097152(2M) -->
+    <constant name="struts.multipart.maxSize" value="10701096"/>
+    <!-- 设置上传文件的临时文件夹,默认使用javax.servlet.context.tempdir -->
+    <constant name="struts.multipart.saveDir" value="e:/tmp" />
+	
+<package name="all" extends="struts-default">
+<!--          <interceptors>   -->
+<!--             <interceptor name="annotationInterceptor" class="cn.edu.cqu.interceptor.CloseDbSessionInterceptor" />   -->
+<!--             <interceptor-stack name="annotatedStack">   -->
+<!--                 <interceptor-ref name="annotationInterceptor" />   -->
+<!--                 <interceptor-ref name="defaultStack" />   -->
+<!--             </interceptor-stack>   -->
+<!--         </interceptors>   -->
+<!--          设置全局 全局默认的拦截器栈     -->
+<!--         <default-interceptor-ref name="annotatedStack"></default-interceptor-ref>    -->
+    </package>
+    <!--不受权限控制的Action请求配置-->
+	<package name="non-authority" extends="all" >		
+	</package>
+		<!--受权限控制的Action请求配置-->
+	<package name="authority" extends="all">
+	</package>
+	
+</struts>
+
+
+

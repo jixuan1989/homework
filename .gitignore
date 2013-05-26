@@ -17,3 +17,7 @@
 lire
 HighDimensionIndex
 RemoteSystemsTempFiles
+
+#ignore searchWeb/*.jpg
+*.jpg
+*.wav

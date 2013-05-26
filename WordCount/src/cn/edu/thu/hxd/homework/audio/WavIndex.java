@@ -86,7 +86,7 @@ public class WavIndex {
 
 
 	}
-	public  void query(File file) throws Exception{
+	public  List<Entry<String, Double>> query(File file) throws Exception{
 		long time=System.currentTimeMillis();
 		List<Vector> queries=new ArrayList<Vector>();
 		List<double[]> windows=new ArrayList<double[]>();
@@ -98,7 +98,7 @@ public class WavIndex {
 			Vector vector=new Vector("|"+windows.get(i)[0]+"|"+windows.get(i)[1],results.get(i));
 			queries.add(vector);
 		}
-		int split=queries.size()/50;
+		int split=Math.max(1,queries.size()/50);
 		CosineDistance distance=new CosineDistance();
 		Map<String,Double> scoresMap=new HashMap<String, Double>();
 		for(int t=0;t<queries.size();t+=split){
@@ -135,10 +135,11 @@ public class WavIndex {
 				return Double.compare(o1.getValue(), o2.getValue());
 			}
 		});
-		for(int i=0;i<sort.size();i++){
-			System.out.println((sort.get(i).getKey())+":"+sort.get(i).getValue());
-		}
-		System.out.println("size:"+sort.size()+",cost time:"+(System.currentTimeMillis()-time));
+//		for(int i=0;i<sort.size();i++){
+//			System.out.println((sort.get(i).getKey())+":"+sort.get(i).getValue());
+//		}
+//		System.out.println("size:"+sort.size()+",cost time:"+(System.currentTimeMillis()-time));
+		return sort;
 	}
 	public static void main(String[] args) throws Exception {
 		WavIndex wavIndex=new WavIndex("hdfs://pc0:9000/features/wavs_smooth2/part-00000");
